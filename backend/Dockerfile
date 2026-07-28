@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # Resume Optimizer v2 — Backend Dockerfile
-# Includes Python 3.11 + Tectonic LaTeX Compiler Engine
+# Includes Python 3.11 + Tectonic LaTeX Compiler Engine (Pre-cached CTAN bundle)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 FROM python:3.11-slim
@@ -20,6 +20,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Download official Tectonic binary directly from GitHub Releases
 RUN curl -fsSL "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-musl.tar.gz" | tar -xz -C /usr/local/bin
+
+# Pre-warm Tectonic CTAN cache during docker build so compilation is instant and offline-capable
+RUN echo '\\documentclass{article}\\begin{document}Test\\end{document}' > /tmp/test.tex \
+    && tectonic -o /tmp /tmp/test.tex \
+    && rm -rf /tmp/test*
 
 WORKDIR /app
 

@@ -64,7 +64,6 @@ class Settings(BaseSettings):
             "https://resume.totalcareservices.me",
             "http://localhost:3000",
             "http://127.0.0.1:3000",
-            "*",
         ],
         description="Allowed CORS origins",
     )

@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # Resume Optimizer v2 — Docker Compose
-# Exposes port 8005 and connects to sales-bot-platform_internal network
+# Runs backend container on port 8005 with internal bridge network
 # ═══════════════════════════════════════════════════════════════════════════════
 
 services:
@@ -11,8 +11,6 @@ services:
     image: ${GHCR_PREFIX:-ghcr.io/malikxolo/resume_optmizer_v2}/backend:latest
     container_name: resume-optimizer-backend
     restart: always
-    ports:
-      - "8005:8005"
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/app/Google_crediantials.json
       - GCP_LOCATION=global
@@ -40,4 +38,5 @@ volumes:
 
 networks:
   internal:
-    driver: bridge
+    name: sales-bot-platform_internal
+    external: true

@@ -156,7 +156,11 @@ async def score_resume(session_id: str):
             logger.exception("Scoring error for session %s", session_id)
             yield {"event": "error", "data": json.dumps({"error": str(e)})}
 
-    return EventSourceResponse(event_generator())
+    sse_headers = {
+        "Cache-Control": "no-cache",
+        "X-Accel-Buffering": "no",
+    }
+    return EventSourceResponse(event_generator(), headers=sse_headers)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -213,7 +217,11 @@ async def chat_edit(session_id: str, req: ChatRequest):
             logger.exception("Chat error for session %s", session_id)
             yield {"event": "error", "data": json.dumps({"error": str(e)})}
 
-    return EventSourceResponse(event_generator())
+    sse_headers = {
+        "Cache-Control": "no-cache",
+        "X-Accel-Buffering": "no",
+    }
+    return EventSourceResponse(event_generator(), headers=sse_headers)
 
 
 @router.get("/rescore/{session_id}")
@@ -279,7 +287,11 @@ async def rescore_session_endpoint(session_id: str):
             logger.exception("Re-scoring error for session %s", session_id)
             yield {"event": "error", "data": json.dumps({"error": str(e)})}
 
-    return EventSourceResponse(event_generator())
+    sse_headers = {
+        "Cache-Control": "no-cache",
+        "X-Accel-Buffering": "no",
+    }
+    return EventSourceResponse(event_generator(), headers=sse_headers)
 
 
 
