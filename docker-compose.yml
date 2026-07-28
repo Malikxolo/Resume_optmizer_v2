@@ -14,7 +14,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/app/Google_crediantials.json
       - GCP_LOCATION=global
-      - GEMINI_MODEL=gemini-1.5-flash
+      - GEMINI_MODEL=gemini-3.6-flash
       - THINKING_LEVEL=HIGH
       - CORS_ORIGINS=["https://resume.totalcareservices.me","http://localhost:3000"]
     volumes:
