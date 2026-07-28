@@ -40,12 +40,13 @@ class GeminiClient:
         settings = get_settings()
 
         # Auth: service account credentials (same pattern as vertextest.cs)
+        cred_path = settings.resolve_credentials_path()
         credentials = service_account.Credentials.from_service_account_file(
-            settings.GOOGLE_CREDENTIALS_PATH,
+            cred_path,
             scopes=["https://www.googleapis.com/auth/cloud-platform"],
         )
         project_id = settings.resolve_project_id()
-        logger.info("Initializing Gemini client — project=%s, model=%s", project_id, settings.GEMINI_MODEL)
+        logger.info("Initializing Gemini client — creds=%s, project=%s, model=%s", cred_path, project_id, settings.GEMINI_MODEL)
 
         self._client = genai.Client(
             vertexai=True,

@@ -36,13 +36,14 @@ async def compile_to_pdf(tex_content: str) -> CompileResult:
     """
     settings = get_settings()
     tectonic_path = settings.TECTONIC_PATH
-
-    # Check if tectonic is available
     if not shutil.which(tectonic_path):
-        return CompileResult(
-            success=False,
-            error=f"Tectonic not found at '{tectonic_path}'. Install tectonic or set TECTONIC_PATH.",
-        )
+        if Path("/usr/local/bin/tectonic").exists():
+            tectonic_path = "/usr/local/bin/tectonic"
+        else:
+            return CompileResult(
+                success=False,
+                error=f"Tectonic not found at '{tectonic_path}'. Install tectonic or set TECTONIC_PATH.",
+            )
 
     with tempfile.TemporaryDirectory(prefix="resume_opt_") as tmpdir:
         tex_path = Path(tmpdir) / "resume.tex"

@@ -27,10 +27,7 @@ class Settings(BaseSettings):
 
     # ── GCP Auth ──────────────────────────────────────────────────
     GOOGLE_CREDENTIALS_PATH: str = Field(
-        default=str(
-            Path(__file__).resolve().parent.parent.parent
-            / "Google_crediantials.json"
-        ),
+        default="",
         description="Path to service account JSON key file",
     )
     GCP_PROJECT_ID: str = Field(
@@ -70,11 +67,32 @@ class Settings(BaseSettings):
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
+    def resolve_credentials_path(self) -> str:
+        """Resolve valid path to service account credentials JSON."""
+        # 1. Environment variable
+        env_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+        if env_path and Path(env_path).exists():
+            return env_path
+        # 2. Configured setting
+        if self.GOOGLE_CREDENTIALS_PATH and Path(self.GOOGLE_CREDENTIALS_PATH).exists():
+            return self.GOOGLE_CREDENTIALS_PATH
+        # 3. Docker container mounts
+        for container_file in ["/app/Google_crediantials.json", "/app/Google_credentials.json"]:
+            if Path(container_file).exists():
+                return container_file
+        # 4. Local workspace root fallback
+        workspace_root = Path(__file__).resolve().parent.parent.parent
+        for fname in ["Google_crediantials.json", "Google_credentials.json", "google_credentials.json"]:
+            candidate = workspace_root / fname
+            if candidate.exists():
+                return str(candidate)
+        return "/app/Google_crediantials.json"
+
     def resolve_project_id(self) -> str:
         """Read project_id from the credentials JSON if not set explicitly."""
         if self.GCP_PROJECT_ID:
             return self.GCP_PROJECT_ID
-        cred_path = Path(self.GOOGLE_CREDENTIALS_PATH)
+        cred_path = Path(self.resolve_credentials_path())
         if cred_path.exists():
             with open(cred_path) as f:
                 data = json.load(f)
