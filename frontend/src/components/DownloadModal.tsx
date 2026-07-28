@@ -8,6 +8,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Download, X } from "lucide-react";
 import { useState } from "react";
+import { API_BASE } from "@/config";
 
 interface DownloadModalProps {
   isOpen: boolean;
@@ -25,7 +26,7 @@ export default function DownloadModal({
   const handleDownload = () => {
     const name = filename.trim() || "resume_optimized";
     const finalName = name.endsWith(".pdf") ? name : `${name}.pdf`;
-    const url = `/api/download/${sessionId}?filename=${encodeURIComponent(finalName)}`;
+    const url = `${API_BASE}/api/download/${sessionId}?filename=${encodeURIComponent(finalName)}`;
     
     // Trigger download via hidden link
     const a = document.createElement("a");

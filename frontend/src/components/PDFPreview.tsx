@@ -7,6 +7,7 @@
 
 import { motion } from "framer-motion";
 import { FileText, AlertCircle } from "lucide-react";
+import { API_BASE } from "@/config";
 
 interface PDFPreviewProps {
   sessionId: string | null;
@@ -29,8 +30,8 @@ export default function PDFPreview({ sessionId, version, hasPdf }: PDFPreviewPro
   }
 
   const pdfUrl = version
-    ? `/api/pdf/${sessionId}/${version}`
-    : `/api/pdf/${sessionId}`;
+    ? `${API_BASE}/api/pdf/${sessionId}/${version}`
+    : `${API_BASE}/api/pdf/${sessionId}`;
 
   return (
     <motion.div

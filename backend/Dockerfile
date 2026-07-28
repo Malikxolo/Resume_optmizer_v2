@@ -18,9 +18,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Tectonic CLI (LaTeX compiler)
-RUN curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.tectonic-typesetting.org | sh \
-    && mv tectonic /usr/local/bin/tectonic
+# Download official Tectonic binary directly from GitHub Releases
+RUN curl -fsSL "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.15.0/tectonic-0.15.0-x86_64-unknown-linux-musl.tar.gz" | tar -xz -C /usr/local/bin
 
 WORKDIR /app
 

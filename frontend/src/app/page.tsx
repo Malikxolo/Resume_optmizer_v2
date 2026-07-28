@@ -32,6 +32,8 @@ import type {
 } from "@/types";
 import { useSSE } from "@/hooks/useSSE";
 
+import { API_BASE } from "@/config";
+
 import UploadFlow from "@/components/UploadFlow";
 import ScoreDashboard from "@/components/ScoreDashboard";
 import AnnotatedResume from "@/components/AnnotatedResume";
@@ -64,7 +66,7 @@ export default function HomePage() {
   const fetchVersions = useCallback(async () => {
     if (!sessionId) return;
     try {
-      const res = await fetch(`/api/history/${sessionId}`);
+      const res = await fetch(`${API_BASE}/api/history/${sessionId}`);
       if (res.ok) {
         const data = await res.json();
         setVersions(data);
@@ -170,7 +172,7 @@ export default function HomePage() {
       setPhase("analyzing");
 
       try {
-        const uploadRes = await fetch("/api/upload", {
+        const uploadRes = await fetch(`${API_BASE}/api/upload`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tex_content: texContent, jd_text: jdText }),
@@ -185,7 +187,7 @@ export default function HomePage() {
         setCurrentVersion(session.current_version);
         setPlaintext(session.plaintext);
 
-        scoringSSE.startStream(`/api/score/${session.session_id}`);
+        scoringSSE.startStream(`${API_BASE}/api/score/${session.session_id}`);
       } catch (err) {
         console.error("Upload error:", err);
         setPhase("upload");
@@ -199,7 +201,7 @@ export default function HomePage() {
   const handleRescore = useCallback(() => {
     if (!sessionId) return;
     setPendingRescore(false);
-    scoringSSE.startStream(`/api/rescore/${sessionId}`);
+    scoringSSE.startStream(`${API_BASE}/api/rescore/${sessionId}`);
   }, [sessionId, scoringSSE]);
 
   const handleSendMessage = useCallback(
@@ -209,7 +211,7 @@ export default function HomePage() {
       setVerificationFlags([]);
       setPendingRescore(true);
 
-      chatSSE.startStream(`/api/chat/${sessionId}`, {
+      chatSSE.startStream(`${API_BASE}/api/chat/${sessionId}`, {
         method: "POST",
         body: JSON.stringify({ message }),
       });
@@ -221,14 +223,14 @@ export default function HomePage() {
     async (version: number) => {
       if (!sessionId) return;
       try {
-        const res = await fetch(`/api/revert/${sessionId}/${version}`, {
+        const res = await fetch(`${API_BASE}/api/revert/${sessionId}/${version}`, {
           method: "POST",
         });
         if (res.ok) {
           const data = await res.json();
           setCurrentVersion(data.version);
-          scoringSSE.startStream(`/api/score/${sessionId}`);
-          const stateRes = await fetch(`/api/session/${sessionId}`);
+          scoringSSE.startStream(`${API_BASE}/api/score/${sessionId}`);
+          const stateRes = await fetch(`${API_BASE}/api/session/${sessionId}`);
           if (stateRes.ok) {
             const state = await stateRes.json();
             setPlaintext(state.plaintext);
