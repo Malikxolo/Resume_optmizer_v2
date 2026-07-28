@@ -81,6 +81,7 @@ async def upload_resume(req: UploadRequest):
         tex_content=req.tex_content,
         plaintext=plaintext,
         jd_text=req.jd_text,
+        has_pdf=pdf_bytes is not None,
     )
 
 

@@ -186,6 +186,7 @@ export default function HomePage() {
         setSessionId(session.session_id);
         setCurrentVersion(session.current_version);
         setPlaintext(session.plaintext);
+        setHasPdf(session.has_pdf ?? true);
 
         scoringSSE.startStream(`${API_BASE}/api/score/${session.session_id}`);
       } catch (err) {

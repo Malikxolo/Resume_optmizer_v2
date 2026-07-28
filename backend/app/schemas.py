@@ -174,3 +174,4 @@ class SessionState(BaseModel):
     tex_content: str
     plaintext: str
     jd_text: str
+    has_pdf: bool = False
