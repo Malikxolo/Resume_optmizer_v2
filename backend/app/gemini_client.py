@@ -33,6 +33,12 @@ _THINKING_LEVELS = {
 }
 
 
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception
+
+def _is_rate_limit(exc: BaseException) -> bool:
+    err_str = str(exc)
+    return "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "Too Many Requests" in err_str
+
 class GeminiClient:
     """Wrapper around google-genai Client with auto-injected thinking config."""
 
@@ -62,6 +68,12 @@ class GeminiClient:
         )
 
     # ── Structured JSON output ────────────────────────────────────
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(min=2, max=10),
+        retry=retry_if_exception(_is_rate_limit),
+        reraise=True,
+    )
     def generate_structured(
         self,
         *,
@@ -71,7 +83,7 @@ class GeminiClient:
     ) -> T:
         """
         Call Gemini with response_schema (Pydantic class) and return
-        the parsed, validated object.
+        the parsed, validated object. Automatically retries on 429 rate limits.
         """
         config = types.GenerateContentConfig(
             thinking_config=self._thinking_config,
@@ -118,13 +130,19 @@ class GeminiClient:
                 yield chunk.text
 
     # ── Plain text output ─────────────────────────────────────────
+    @retry(
+        stop=stop_after_attempt(5),
+        wait=wait_exponential(min=2, max=10),
+        retry=retry_if_exception(_is_rate_limit),
+        reraise=True,
+    )
     def generate_text(
         self,
         *,
         prompt: str,
         system: str | None = None,
     ) -> str:
-        """Simple text completion — no schema, no streaming."""
+        """Simple text completion — no schema, no streaming. Retries on 429."""
         config = types.GenerateContentConfig(
             thinking_config=self._thinking_config,
         )

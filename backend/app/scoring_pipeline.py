@@ -185,7 +185,9 @@ async def run_scoring_pipeline(
 
     logger.info("Starting Stages 3, 4, 5 in parallel (grounded in Stage 2 audit)...")
     ats_task = asyncio.to_thread(_score_ats_grounded, client, tex_content, jd_text, audit)
+    await asyncio.sleep(0.5)
     ai_task = asyncio.to_thread(_score_ai_screening_grounded, client, tex_content, jd_text, audit)
+    await asyncio.sleep(0.5)
     issues_task = asyncio.to_thread(
         _extract_issues_and_missing, client, tex_content, plaintext, jd_text, audit
     )
