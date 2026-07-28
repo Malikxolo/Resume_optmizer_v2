@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # Resume Optimizer v2 — Docker Compose
-# Runs alongside Salesbot on private 'internal' Docker network
+# Runs backend container on port 8005 with internal bridge network
 # ═══════════════════════════════════════════════════════════════════════════════
 
 services:
@@ -38,4 +38,4 @@ volumes:
 
 networks:
   internal:
-    external: true
+    driver: bridge
