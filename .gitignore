@@ -1,0 +1,53 @@
+# Credentials — NEVER COMMIT
+Google_crediantials.json
+Google_credentials.json
+google_credentials.json
+*.json.bak
+
+# Test files & generated LaTeX test outputs
+resume_test.tex
+resume_fixed_test.tex
+test_jd.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.egg
+
+# Data & Databases
+data/
+*.db
+*.sqlite3
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+frontend/.next/
+frontend/node_modules/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs & Docker
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tectonic LaTeX Cache
+.tectonic/

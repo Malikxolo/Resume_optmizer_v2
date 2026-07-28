@@ -1,0 +1,41 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Resume Optimizer v2 — Docker Compose
+# Runs alongside Salesbot on private 'internal' Docker network
+# ═══════════════════════════════════════════════════════════════════════════════
+
+services:
+  resume-optimizer-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: ${GHCR_PREFIX:-ghcr.io/malikxolo/resume_optmizer_v2}/backend:latest
+    container_name: resume-optimizer-backend
+    restart: always
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/Google_crediantials.json
+      - GCP_LOCATION=global
+      - GEMINI_MODEL=gemini-1.5-flash
+      - THINKING_LEVEL=HIGH
+      - CORS_ORIGINS=["https://resume.totalcareservices.me","http://localhost:3000"]
+    volumes:
+      # Mount Google credentials file from host VM
+      - ${CREDENTIALS_PATH:-./credentials}/Google_crediantials.json:/app/Google_crediantials.json:ro
+      # Persistent storage for SQLite database
+      - resume-data:/app/data
+    networks:
+      - internal
+    expose:
+      - "8005"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  resume-data:
+    driver: local
+
+networks:
+  internal:
+    external: true
