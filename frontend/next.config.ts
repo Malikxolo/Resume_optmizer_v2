@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
   // Standalone output for Docker deployment
   output: "standalone",
 
+  // Keep Turbopack inside this frontend project when another lockfile exists higher up.
+  turbopack: {
+    root: process.cwd(),
+  },
+
   // Proxy API calls to the FastAPI backend during development or production fallback
   async rewrites() {
     return [

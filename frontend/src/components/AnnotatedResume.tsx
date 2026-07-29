@@ -109,11 +109,11 @@ export default function AnnotatedResume({
   let annotationIndex = 0;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="resume-analysis">
       {/* Resume Text View */}
-      <div className="glass-card overflow-hidden">
+      <div className="glass-card resume-panel">
         <div
-          className="px-6 py-4 flex items-center justify-between"
+          className="resume-panel-header"
           style={{ borderBottom: "1px solid var(--border-subtle)", background: "rgba(255,255,255,0.01)" }}
         >
           <div className="flex items-center gap-2.5">
@@ -136,7 +136,7 @@ export default function AnnotatedResume({
           )}
         </div>
 
-        <div className="p-6 md:p-8">
+        <div className="resume-panel-content">
           <div
             className="text-sm leading-relaxed whitespace-pre-wrap font-sans"
             style={{
@@ -182,7 +182,7 @@ export default function AnnotatedResume({
                   <AnimatePresence>
                     {(activeTooltip === tooltipId || isPopoverOpen) && (
                       <motion.div
-                        className="tooltip absolute z-50 p-4 rounded-xl shadow-2xl"
+                        className="tooltip annotation-tooltip"
                         style={{
                           bottom: "calc(100% + 10px)",
                           left: "50%",
@@ -336,7 +336,7 @@ export default function AnnotatedResume({
       {/* Missing Content Cards & Auto-Fix All Hero Banner */}
       {missingContent.length > 0 && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
+          <div className="missing-content-header">
             <div className="flex items-center gap-2">
               <AlertTriangle size={16} style={{ color: "var(--warning)" }} />
               <h3
@@ -349,7 +349,7 @@ export default function AnnotatedResume({
 
             {onFixIssue && (
               <button
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold shadow-lg transition-all"
+                className="auto-fix-button"
                 style={{
                   background: "linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)",
                   color: "#ffffff",
@@ -366,11 +366,11 @@ export default function AnnotatedResume({
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="missing-content-grid">
             {missingContent.map((mc, i) => (
               <motion.div
                 key={i}
-                className="glass-card p-4 rounded-xl flex flex-col justify-between"
+                className="glass-card missing-content-card"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * i, duration: 0.3 }}

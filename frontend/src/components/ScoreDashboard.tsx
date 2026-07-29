@@ -87,13 +87,13 @@ function ScoreCard({
 
   return (
     <motion.div
-      className="glass-card overflow-hidden"
+      className="glass-card score-card"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
       {/* Header */}
-      <div className="p-6 pb-4 flex items-center gap-5">
+      <div className="score-card-header">
         <ScoreRing score={score} prevScore={prevTotal} label="" color={color} size={110} strokeWidth={7} />
 
         <div className="flex-1">
@@ -132,7 +132,7 @@ function ScoreCard({
 
       {/* Expand toggle */}
       <button
-        className="w-full px-6 py-2.5 flex items-center justify-center gap-1.5 text-xs font-medium transition-colors"
+        className="score-card-toggle"
         style={{
           borderTop: "1px solid var(--border-subtle)",
           color: "var(--text-secondary)",
@@ -189,10 +189,10 @@ export default function ScoreDashboard({ atsScore, aiScore }: ScoreDashboardProp
   const verdict = getVerdict(overallScore);
 
   return (
-    <div className="space-y-5">
+    <div className="score-dashboard">
       {/* Primary Overall Match Score Hero Card */}
       <motion.div
-        className="glass-card p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6"
+        className="glass-card score-hero"
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
@@ -201,7 +201,7 @@ export default function ScoreDashboard({ atsScore, aiScore }: ScoreDashboardProp
           border: "1px solid rgba(139, 92, 246, 0.2)",
         }}
       >
-        <div className="flex items-center gap-6">
+        <div className="score-hero-summary">
           <ScoreRing score={overallScore} label="OVERALL" color="violet" size={140} strokeWidth={9} />
 
           <div>
@@ -230,9 +230,9 @@ export default function ScoreDashboard({ atsScore, aiScore }: ScoreDashboardProp
         </div>
 
         {/* Sub-Pills Quick Overview */}
-        <div className="flex flex-row md:flex-col gap-3 w-full md:w-auto shrink-0">
+        <div className="score-quick-stats">
           <div
-            className="flex-1 px-4 py-2.5 rounded-xl flex items-center justify-between gap-4"
+            className="score-quick-stat"
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-subtle)" }}
           >
             <div className="flex items-center gap-2">
@@ -250,7 +250,7 @@ export default function ScoreDashboard({ atsScore, aiScore }: ScoreDashboardProp
           </div>
 
           <div
-            className="flex-1 px-4 py-2.5 rounded-xl flex items-center justify-between gap-4"
+            className="score-quick-stat"
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border-subtle)" }}
           >
             <div className="flex items-center gap-2">
@@ -270,7 +270,7 @@ export default function ScoreDashboard({ atsScore, aiScore }: ScoreDashboardProp
       </motion.div>
 
       {/* Detailed Breakdown Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="score-details-grid">
         {atsScore && (
           <ScoreCard
             title="ATS Parseability & Keyword Coverage"

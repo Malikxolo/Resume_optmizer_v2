@@ -35,7 +35,7 @@ export default function PDFPreview({ sessionId, version, hasPdf }: PDFPreviewPro
 
   return (
     <motion.div
-      className="glass-card overflow-hidden"
+      className="glass-card pdf-preview"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.3 }}
@@ -54,7 +54,7 @@ export default function PDFPreview({ sessionId, version, hasPdf }: PDFPreviewPro
         src={pdfUrl}
         type="application/pdf"
         className="w-full"
-        style={{ height: "600px", background: "var(--bg-primary)" }}
+        style={{ height: "min(72vh, 780px)", background: "var(--bg-primary)" }}
       />
     </motion.div>
   );

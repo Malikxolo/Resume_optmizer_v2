@@ -7,7 +7,7 @@
  */
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { Send, AlertTriangle, Loader2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import type { ChatMessage, VerificationFlag } from "@/types";
 
@@ -47,10 +47,10 @@ export default function ChatPanel({
   };
 
   return (
-    <div className="glass-card flex flex-col h-full">
+    <div className="glass-card chat-panel">
       {/* Header */}
       <div
-        className="px-5 py-3 flex items-center gap-2"
+        className="chat-panel-header"
         style={{ borderBottom: "1px solid var(--border-subtle)" }}
       >
         <span
@@ -78,7 +78,7 @@ export default function ChatPanel({
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 min-h-0">
+      <div className="chat-panel-messages">
         {messages.length === 0 && (
           <div className="text-center py-8">
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>
@@ -182,7 +182,7 @@ export default function ChatPanel({
 
       {/* Input */}
       <div
-        className="px-5 py-3"
+        className="chat-panel-composer"
         style={{ borderTop: "1px solid var(--border-subtle)" }}
       >
         <div className="flex items-end gap-2">

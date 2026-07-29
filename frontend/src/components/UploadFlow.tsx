@@ -53,14 +53,14 @@ export default function UploadFlow({ onSubmit, isLoading }: UploadFlowProps) {
 
   return (
     <motion.div
-      className="flex flex-col items-center justify-center min-h-[80vh] px-4"
+      className="upload-flow"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       {/* Hero */}
       <motion.div
-        className="text-center mb-12"
+        className="upload-hero"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1, duration: 0.6 }}
@@ -110,7 +110,7 @@ export default function UploadFlow({ onSubmit, isLoading }: UploadFlowProps) {
 
       {/* Upload Card */}
       <motion.div
-        className="glass-card w-full max-w-2xl p-8"
+        className="glass-card upload-card"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.6 }}

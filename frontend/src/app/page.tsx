@@ -16,7 +16,6 @@ import {
   Sparkles,
   RefreshCw,
   RotateCw,
-  SlidersHorizontal,
 } from "lucide-react";
 
 import type {
@@ -261,19 +260,19 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen pb-16" style={{ background: "var(--bg-primary)" }}>
+    <div className="app-shell" style={{ background: "var(--bg-primary)" }}>
       {/* Top Navbar */}
       <header
-        className="sticky top-0 z-40 px-6 py-3.5 flex items-center justify-between"
+          className="app-header"
         style={{
           background: "rgba(10, 10, 15, 0.85)",
           backdropFilter: "blur(16px)",
           borderBottom: "1px solid var(--border-subtle)",
         }}
       >
-        <div className="flex items-center gap-3">
+        <div className="app-brand">
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            className="app-brand-mark"
             style={{ background: "var(--accent-gradient)" }}
           >
             <Sparkles size={18} className="text-white" />
@@ -292,10 +291,10 @@ export default function HomePage() {
         </div>
 
         {sessionId && (
-          <div className="flex items-center gap-2.5">
+          <div className="app-header-actions">
             {pendingRescore && (
               <button
-                className="btn-accent flex items-center gap-1.5 text-xs py-2 shadow-lg animate-pulse"
+                className="btn-accent app-action-button app-action-rescore"
                 style={{
                   background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                   color: "#ffffff",
@@ -308,8 +307,8 @@ export default function HomePage() {
             )}
 
             <button
-              className={`btn-ghost flex items-center gap-1.5 text-xs py-2 ${
-                showChat ? "border-violet-500/50 bg-violet-500/10 text-violet-300" : ""
+              className={`btn-ghost app-action-button app-chat-toggle ${
+                showChat ? "app-chat-toggle-active" : ""
               }`}
               onClick={() => setShowChat(!showChat)}
             >
@@ -318,7 +317,7 @@ export default function HomePage() {
             </button>
 
             <button
-              className="btn-accent flex items-center gap-1.5 text-xs py-2"
+              className="btn-accent app-action-button app-export-button"
               onClick={() => setShowDownloadModal(true)}
             >
               <Download size={14} />
@@ -326,7 +325,7 @@ export default function HomePage() {
             </button>
 
             <button
-              className="btn-ghost p-2 text-xs"
+              className="btn-ghost app-icon-button"
               onClick={handleNewResume}
               title="Start New Session"
             >
@@ -337,7 +336,7 @@ export default function HomePage() {
       </header>
 
       {/* Main Workspace */}
-      <main className="max-w-7xl mx-auto px-4 md:px-6 pt-6">
+      <main className="app-main">
         <AnimatePresence mode="wait">
           {/* Phase 1: Upload */}
           {phase === "upload" && (
@@ -355,7 +354,7 @@ export default function HomePage() {
           {phase === "analyzing" && (
             <motion.div
               key="analyzing"
-              className="space-y-6 max-w-4xl mx-auto py-12"
+              className="analysis-loading"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -387,7 +386,7 @@ export default function HomePage() {
           {(phase === "results" || phase === "chat") && (
             <motion.div
               key="results"
-              className="space-y-6"
+              className="results-view"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
@@ -395,18 +394,18 @@ export default function HomePage() {
               <ScoreDashboard atsScore={atsScore} aiScore={aiScore} />
 
               {/* Main Content Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              <div className={`workspace-grid ${showChat ? "workspace-with-chat" : ""}`}>
                 {/* Center / Primary View */}
-                <div className={`${showChat ? "lg:col-span-8" : "lg:col-span-12"} space-y-4 transition-all duration-300`}>
+                <div className="workspace-primary">
                   {/* View Mode Toolbar */}
                   <div
-                    className="flex items-center justify-between p-1.5 rounded-xl"
+                    className="view-toolbar"
                     style={{ background: "var(--bg-secondary)", border: "1px solid var(--border-subtle)" }}
                   >
-                    <div className="flex gap-1">
+                    <div className="view-tabs">
                       <button
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
-                          activeTab === "resume" ? "bg-white/10 text-white shadow-sm" : "text-muted-foreground hover:text-white"
+                        className={`view-tab ${
+                          activeTab === "resume" ? "view-tab-active" : ""
                         }`}
                         onClick={() => setActiveTab("resume")}
                       >
@@ -414,8 +413,8 @@ export default function HomePage() {
                         Annotated Breakdown
                       </button>
                       <button
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-all ${
-                          activeTab === "pdf" ? "bg-white/10 text-white shadow-sm" : "text-muted-foreground hover:text-white"
+                        className={`view-tab ${
+                          activeTab === "pdf" ? "view-tab-active" : ""
                         }`}
                         onClick={() => setActiveTab("pdf")}
                       >
@@ -479,7 +478,7 @@ export default function HomePage() {
                 {/* Sidebar Copilot */}
                 {showChat && (
                   <motion.div
-                    className="lg:col-span-4 sticky top-20 h-[calc(100vh-100px)]"
+                    className="workspace-chat"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}

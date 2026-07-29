@@ -22,7 +22,7 @@ export default function VersionTimeline({
   if (versions.length <= 1) return null;
 
   return (
-    <div className="glass-card p-4">
+    <div className="glass-card version-timeline">
       <h3
         className="text-sm font-semibold mb-3 flex items-center gap-2"
         style={{ color: "var(--text-secondary)", fontFamily: "var(--font-display)" }}
