@@ -5,7 +5,7 @@
  * Premium layout with structured grid and top-tier visual hierarchy.
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Download,
@@ -61,6 +61,19 @@ export default function HomePage() {
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [versions, setVersions] = useState<VersionInfo[]>([]);
   const [activeTab, setActiveTab] = useState<"resume" | "pdf">("resume");
+  const [isDemoMode, setIsDemoMode] = useState(false);
+
+  // Fetch backend configuration (e.g. demo mode status)
+  useEffect(() => {
+    fetch(`${API_BASE}/api/config`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.demo_mode) {
+          setIsDemoMode(true);
+        }
+      })
+      .catch((err) => console.log("Config check error:", err));
+  }, []);
 
   const fetchVersions = useCallback(async () => {
     if (!sessionId) return;
@@ -278,61 +291,93 @@ export default function HomePage() {
             <Sparkles size={18} className="text-white" />
           </div>
           <div>
-            <span
-              className="text-base font-bold tracking-tight block leading-none"
-              style={{ fontFamily: "var(--font-display)", color: "var(--text-primary)" }}
-            >
-              Resume Optimizer
-            </span>
+            <div className="flex items-center gap-2">
+              <span
+                className="text-base font-bold tracking-tight block leading-none"
+                style={{ fontFamily: "var(--font-display)", color: "var(--text-primary)" }}
+              >
+                Resume Optimizer
+              </span>
+              {isDemoMode && (
+                <span
+                  className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider"
+                  style={{
+                    background: "rgba(16, 185, 129, 0.2)",
+                    color: "#34d399",
+                    border: "1px solid rgba(16, 185, 129, 0.3)",
+                  }}
+                >
+                  Demo Mode
+                </span>
+              )}
+            </div>
             <span className="text-[10px] text-muted-foreground" style={{ color: "var(--text-muted)" }}>
-              Powered by Gemini 3.6 Flash
+              {isDemoMode ? "Mock UI Test Mode (0 LLM calls)" : "Powered by Gemini 3.6 Flash"}
             </span>
           </div>
         </div>
 
-        {sessionId && (
-          <div className="app-header-actions">
-            {pendingRescore && (
+        <div className="app-header-actions flex items-center gap-2">
+          {isDemoMode && (
+            <button
+              className="btn-accent app-action-button"
+              style={{
+                background: "linear-gradient(135deg, #10b981 0%, #3b82f6 100%)",
+                color: "#ffffff",
+                boxShadow: "0 0 15px rgba(16, 185, 129, 0.35)",
+              }}
+              onClick={() => handleUpload("", "")}
+              title="Launch instant Demo Mode with sample data"
+            >
+              <Sparkles size={14} className="animate-pulse" />
+              ⚡ Demo Mode
+            </button>
+          )}
+
+          {sessionId && (
+            <>
+              {pendingRescore && (
+                <button
+                  className="btn-accent app-action-button app-action-rescore"
+                  style={{
+                    background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+                    color: "#ffffff",
+                  }}
+                  onClick={handleRescore}
+                >
+                  <RotateCw size={13} className="animate-spin-slow" />
+                  Re-Score Resume 🔄
+                </button>
+              )}
+
               <button
-                className="btn-accent app-action-button app-action-rescore"
-                style={{
-                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-                  color: "#ffffff",
-                }}
-                onClick={handleRescore}
+                className={`btn-ghost app-action-button app-chat-toggle ${
+                  showChat ? "app-chat-toggle-active" : ""
+                }`}
+                onClick={() => setShowChat(!showChat)}
               >
-                <RotateCw size={13} className="animate-spin-slow" />
-                Re-Score Resume 🔄
+                <MessageSquare size={14} />
+                {showChat ? "Close Copilot" : "AI Refinement"}
               </button>
-            )}
 
-            <button
-              className={`btn-ghost app-action-button app-chat-toggle ${
-                showChat ? "app-chat-toggle-active" : ""
-              }`}
-              onClick={() => setShowChat(!showChat)}
-            >
-              <MessageSquare size={14} />
-              {showChat ? "Close Copilot" : "AI Refinement"}
-            </button>
+              <button
+                className="btn-accent app-action-button app-export-button"
+                onClick={() => setShowDownloadModal(true)}
+              >
+                <Download size={14} />
+                Export PDF
+              </button>
 
-            <button
-              className="btn-accent app-action-button app-export-button"
-              onClick={() => setShowDownloadModal(true)}
-            >
-              <Download size={14} />
-              Export PDF
-            </button>
-
-            <button
-              className="btn-ghost app-icon-button"
-              onClick={handleNewResume}
-              title="Start New Session"
-            >
-              <ArrowLeft size={15} />
-            </button>
-          </div>
-        )}
+              <button
+                className="btn-ghost app-icon-button"
+                onClick={handleNewResume}
+                title="Start New Session"
+              >
+                <ArrowLeft size={15} />
+              </button>
+            </>
+          )}
+        </div>
       </header>
 
       {/* Main Workspace */}
@@ -346,7 +391,11 @@ export default function HomePage() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
             >
-              <UploadFlow onSubmit={handleUpload} isLoading={false} />
+              <UploadFlow
+                onSubmit={handleUpload}
+                isLoading={false}
+                isDemoMode={isDemoMode}
+              />
             </motion.div>
           )}
 
@@ -394,7 +443,7 @@ export default function HomePage() {
               <ScoreDashboard atsScore={atsScore} aiScore={aiScore} />
 
               {/* Main Content Layout */}
-              <div className={`workspace-grid ${showChat ? "workspace-with-chat" : ""}`}>
+              <div className="workspace-grid">
                 {/* Center / Primary View */}
                 <div className="workspace-primary">
                   {/* View Mode Toolbar */}
@@ -474,29 +523,52 @@ export default function HomePage() {
                     onRevert={handleRevert}
                   />
                 </div>
-
-                {/* Sidebar Copilot */}
-                {showChat && (
-                  <motion.div
-                    className="workspace-chat"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <ChatPanel
-                      messages={messages}
-                      verificationFlags={verificationFlags}
-                      isStreaming={chatSSE.isStreaming}
-                      onSendMessage={handleSendMessage}
-                    />
-                  </motion.div>
-                )}
               </div>
             </motion.div>
           )}
         </AnimatePresence>
       </main>
+
+      {/* Floating Copilot Overlay & Toggle */}
+      {(phase === "results" || phase === "chat") && (
+        <AnimatePresence>
+          {showChat ? (
+            <motion.div
+              key="floating-chat"
+              className="workspace-chat-floating"
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 30, scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            >
+              <ChatPanel
+                messages={messages}
+                verificationFlags={verificationFlags}
+                isStreaming={chatSSE.isStreaming}
+                onSendMessage={handleSendMessage}
+                onClose={() => setShowChat(false)}
+              />
+            </motion.div>
+          ) : (
+            <motion.button
+              key="floating-trigger"
+              className="floating-chat-trigger"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowChat(true)}
+            >
+              <Sparkles size={16} className="text-violet-300" />
+              <span>AI Refinement</span>
+              {messages.length > 0 && (
+                <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              )}
+            </motion.button>
+          )}
+        </AnimatePresence>
+      )}
 
       {/* Export Modal */}
       {sessionId && (

@@ -16,7 +16,13 @@ from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 
 from app.chat_service import process_chat_message
+from app.config import get_settings
 from app.latex_pipeline import compile_to_pdf, extract_plaintext
+from app.mock_data import (
+    DEFAULT_SAMPLE_JD,
+    DEFAULT_SAMPLE_TEX,
+    MOCK_SCORING_RESULT,
+)
 from app.schemas import (
     ChatRequest,
     SessionState,
@@ -43,6 +49,17 @@ router = APIRouter(prefix="/api")
 
 
 # ═══════════════════════════════════════════════════════════════════
+# Config
+# ═══════════════════════════════════════════════════════════════════
+
+@router.get("/config")
+async def get_app_config():
+    """Return application environment flags like demo_mode."""
+    settings = get_settings()
+    return {"demo_mode": settings.DEMO_MODE}
+
+
+# ═══════════════════════════════════════════════════════════════════
 # Upload
 # ═══════════════════════════════════════════════════════════════════
 
@@ -51,15 +68,27 @@ async def upload_resume(req: UploadRequest):
     """
     Upload a .tex resume and JD text.
     Creates a session, extracts plaintext, compiles PDF, and returns session state.
+    In Demo Mode, automatically fills empty payload with default demo resume & JD.
     """
+    settings = get_settings()
+
+    tex_content = req.tex_content
+    jd_text = req.jd_text
+
+    if settings.DEMO_MODE:
+        if not tex_content or not tex_content.strip():
+            tex_content = DEFAULT_SAMPLE_TEX
+        if not jd_text or not jd_text.strip():
+            jd_text = DEFAULT_SAMPLE_JD
+
     # Create session
-    session_id = await create_session(req.jd_text)
+    session_id = await create_session(jd_text)
 
     # Extract plaintext
-    plaintext = await extract_plaintext(req.tex_content)
+    plaintext = await extract_plaintext(tex_content)
 
     # Compile PDF (non-blocking, don't fail the upload if tectonic is missing)
-    compile_result = await compile_to_pdf(req.tex_content)
+    compile_result = await compile_to_pdf(tex_content)
     pdf_bytes = compile_result.pdf_bytes if compile_result.success else None
 
     if not compile_result.success:
@@ -69,7 +98,7 @@ async def upload_resume(req: UploadRequest):
     await save_version(
         session_id=session_id,
         version_num=1,
-        tex_content=req.tex_content,
+        tex_content=tex_content,
         plaintext=plaintext,
         pdf_bytes=pdf_bytes,
         change_summary="Initial upload",
@@ -78,9 +107,9 @@ async def upload_resume(req: UploadRequest):
     return SessionState(
         session_id=session_id,
         current_version=1,
-        tex_content=req.tex_content,
+        tex_content=tex_content,
         plaintext=plaintext,
-        jd_text=req.jd_text,
+        jd_text=jd_text,
         has_pdf=pdf_bytes is not None,
     )
 
@@ -112,11 +141,13 @@ async def score_resume(session_id: str):
             tex_content = latest["tex_content"]
             plaintext = latest["plaintext"]
 
-            # Signal start
-            yield {"event": "status", "data": json.dumps({"status": "scoring", "message": "Analyzing resume..."})}
-
-            # Run scoring pipeline
-            result = await run_scoring_pipeline(tex_content, jd_text, plaintext)
+            settings = get_settings()
+            if settings.DEMO_MODE:
+                yield {"event": "status", "data": json.dumps({"status": "scoring", "message": "⚡ Demo Mode: Instant mock score analysis (0 LLM calls)..."})}
+                result = MOCK_SCORING_RESULT
+            else:
+                yield {"event": "status", "data": json.dumps({"status": "scoring", "message": "Analyzing resume..."})}
+                result = await run_scoring_pipeline(tex_content, jd_text, plaintext)
 
             # Stream results progressively
             yield {
@@ -183,6 +214,37 @@ async def chat_edit(session_id: str, req: ChatRequest):
                 yield {"event": "error", "data": json.dumps({"error": "Session not found"})}
                 return
 
+            settings = get_settings()
+            if settings.DEMO_MODE:
+                yield {"event": "status", "data": json.dumps({"status": "editing", "message": "⚡ Demo Mode: Mock refinement..."})}
+                latest = await get_latest_version(session_id)
+                v_num = latest["version_num"] if latest else 1
+                mock_summary = f"⚡ [Demo Mode] Mock instruction received: '{req.message}'. In live production, Gemini 3.6 Flash applies exact LaTeX edits!"
+                yield {
+                    "event": "edit_result",
+                    "data": json.dumps({
+                        "version": v_num,
+                        "tex_content": latest["tex_content"] if latest else "",
+                        "plaintext": latest["plaintext"] if latest else "",
+                        "change_summary": mock_summary,
+                        "compile_error": None,
+                        "has_pdf": True,
+                    }),
+                }
+                yield {
+                    "event": "verification",
+                    "data": json.dumps({"flags": []}),
+                }
+                yield {
+                    "event": "complete",
+                    "data": json.dumps({
+                        "version": v_num,
+                        "needs_rescore": False,
+                        "message": mock_summary,
+                    }),
+                }
+                return
+
             yield {"event": "status", "data": json.dumps({"status": "editing", "message": "Applying changes..."})}
 
             # Process chat message in fast mode (no auto-rescore)
@@ -247,9 +309,13 @@ async def rescore_session_endpoint(session_id: str):
             tex_content = latest["tex_content"]
             plaintext = latest["plaintext"]
 
-            yield {"event": "status", "data": json.dumps({"status": "scoring", "message": "Re-analyzing resume against JD..."})}
-
-            result = await run_scoring_pipeline(tex_content, jd_text, plaintext)
+            settings = get_settings()
+            if settings.DEMO_MODE:
+                yield {"event": "status", "data": json.dumps({"status": "scoring", "message": "⚡ Demo Mode: Instant mock re-score..."})}
+                result = MOCK_SCORING_RESULT
+            else:
+                yield {"event": "status", "data": json.dumps({"status": "scoring", "message": "Re-analyzing resume against JD..."})}
+                result = await run_scoring_pipeline(tex_content, jd_text, plaintext)
 
             yield {
                 "event": "ats_score",

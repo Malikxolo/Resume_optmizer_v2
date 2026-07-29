@@ -12,9 +12,10 @@ import { useCallback, useRef, useState, DragEvent } from "react";
 interface UploadFlowProps {
   onSubmit: (texContent: string, jdText: string) => void;
   isLoading: boolean;
+  isDemoMode?: boolean;
 }
 
-export default function UploadFlow({ onSubmit, isLoading }: UploadFlowProps) {
+export default function UploadFlow({ onSubmit, isLoading, isDemoMode }: UploadFlowProps) {
   const [texContent, setTexContent] = useState("");
   const [jdText, setJdText] = useState("");
   const [fileName, setFileName] = useState("");
@@ -45,11 +46,11 @@ export default function UploadFlow({ onSubmit, isLoading }: UploadFlowProps) {
   );
 
   const handleSubmit = () => {
-    if (!texContent.trim() || !jdText.trim()) return;
+    if (!isDemoMode && (!texContent.trim() || !jdText.trim())) return;
     onSubmit(texContent, jdText);
   };
 
-  const canSubmit = texContent.trim() && jdText.trim() && !isLoading;
+  const canSubmit = !isLoading && (isDemoMode || (Boolean(texContent.trim()) && Boolean(jdText.trim())));
 
   return (
     <motion.div
@@ -85,7 +86,7 @@ export default function UploadFlow({ onSubmit, isLoading }: UploadFlowProps) {
         </motion.div>
 
         <h1
-          className="text-4xl md:text-5xl font-bold mb-4"
+          className="text-4xl md:text-5xl font-bold mb-4 tracking-tight"
           style={{ fontFamily: "var(--font-display)" }}
         >
           <span style={{ color: "var(--text-primary)" }}>Resume </span>
@@ -100,11 +101,11 @@ export default function UploadFlow({ onSubmit, isLoading }: UploadFlowProps) {
           </span>
         </h1>
         <p
-          className="text-lg max-w-lg mx-auto"
+          className="text-base md:text-lg max-w-2xl mx-auto leading-relaxed text-center px-4"
           style={{ color: "var(--text-secondary)" }}
         >
-          Score your resume against any job description. Get AI-powered
-          annotations, then iteratively refine — with zero hallucinated facts.
+          Score your resume against any job description. Get AI-powered annotations,
+          then iteratively refine — with zero hallucinated facts.
         </p>
       </motion.div>
 
@@ -176,6 +177,29 @@ export default function UploadFlow({ onSubmit, isLoading }: UploadFlowProps) {
           />
         </div>
 
+        {/* Demo Mode Instant Action */}
+        {isDemoMode && (
+          <div className="mb-4">
+            <button
+              type="button"
+              className="w-full py-3 px-4 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg"
+              style={{
+                background: "linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%)",
+                border: "1px solid rgba(16, 185, 129, 0.4)",
+                color: "#6ee7b7",
+              }}
+              onClick={() => onSubmit("", "")}
+              disabled={isLoading}
+            >
+              <Sparkles size={16} className="animate-pulse" />
+              ⚡ Launch Demo Mode (Instant Mock UI)
+            </button>
+            <p className="text-[11px] text-center mt-1.5" style={{ color: "var(--text-muted)" }}>
+              Bypasses LLM calls for instant testing with built-in sample resume & JD
+            </p>
+          </div>
+        )}
+
         {/* Submit */}
         <motion.button
           className="btn-accent w-full flex items-center justify-center gap-2 py-3.5 text-base"
@@ -196,7 +220,7 @@ export default function UploadFlow({ onSubmit, isLoading }: UploadFlowProps) {
           ) : (
             <>
               <Sparkles size={18} />
-              Analyze Resume
+              {isDemoMode ? "Analyze Resume (or click Demo above)" : "Analyze Resume"}
             </>
           )}
         </motion.button>

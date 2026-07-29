@@ -55,7 +55,11 @@ class Settings(BaseSettings):
         description="SQLite database path",
     )
 
-    # ── Server ────────────────────────────────────────────────────
+    # ── Server & Environment ──────────────────────────────────────
+    DEMO_MODE: bool = Field(
+        default=False,
+        description="Enable demo mode for testing UI without making LLM calls",
+    )
     CORS_ORIGINS: list[str] = Field(
         default=[
             "https://resume.totalcareservices.me",
