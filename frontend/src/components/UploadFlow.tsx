@@ -6,7 +6,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Upload, FileText, Sparkles } from "lucide-react";
+import { Upload, FileText, Sparkles, Code, Clipboard } from "lucide-react";
 import { useCallback, useRef, useState, DragEvent } from "react";
 
 interface UploadFlowProps {
@@ -16,6 +16,7 @@ interface UploadFlowProps {
 }
 
 export default function UploadFlow({ onSubmit, isLoading, isDemoMode }: UploadFlowProps) {
+  const [inputMethod, setInputMethod] = useState<"file" | "paste">("file");
   const [texContent, setTexContent] = useState("");
   const [jdText, setJdText] = useState("");
   const [fileName, setFileName] = useState("");
@@ -116,49 +117,130 @@ export default function UploadFlow({ onSubmit, isLoading, isDemoMode }: UploadFl
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.6 }}
       >
-        {/* File Drop Zone */}
+        {/* Input Method Toggle Tabs */}
         <div
-          className={`drop-zone mb-6 ${isDragging ? "dragging" : ""}`}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragging(true);
+          className="flex items-center gap-2 mb-6 p-1.5 rounded-xl"
+          style={{
+            background: "rgba(255, 255, 255, 0.03)",
+            border: "1px solid var(--border-subtle)",
           }}
-          onDragLeave={() => setIsDragging(false)}
-          onDrop={handleDrop}
-          onClick={() => fileRef.current?.click()}
         >
-          <input
-            ref={fileRef}
-            type="file"
-            accept=".tex"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleFile(file);
-            }}
-          />
-          {fileName ? (
-            <div className="flex flex-col items-center gap-2">
-              <FileText size={32} style={{ color: "var(--success)" }} />
-              <span className="font-medium" style={{ color: "var(--text-primary)" }}>
-                {fileName}
-              </span>
-              <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                Click or drop to replace
-              </span>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <Upload size={32} style={{ color: "var(--text-muted)" }} />
-              <span className="font-medium" style={{ color: "var(--text-secondary)" }}>
-                Drop your .tex resume here
-              </span>
-              <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                or click to browse
-              </span>
-            </div>
-          )}
+          <button
+            type="button"
+            className={`flex-1 py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              inputMethod === "file"
+                ? "bg-violet-600/30 text-white border border-violet-500/40 shadow-sm"
+                : "text-gray-400 hover:text-gray-200 hover:bg-white/5"
+            }`}
+            onClick={() => setInputMethod("file")}
+          >
+            <Upload size={14} />
+            Upload .tex File
+          </button>
+          <button
+            type="button"
+            className={`flex-1 py-2.5 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              inputMethod === "paste"
+                ? "bg-violet-600/30 text-white border border-violet-500/40 shadow-sm"
+                : "text-gray-400 hover:text-gray-200 hover:bg-white/5"
+            }`}
+            onClick={() => setInputMethod("paste")}
+          >
+            <Code size={14} />
+            Paste TeX Code
+          </button>
         </div>
+
+        {/* Input Option 1: File Drop Zone */}
+        {inputMethod === "file" && (
+          <div
+            className={`drop-zone mb-6 ${isDragging ? "dragging" : ""}`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
+            onClick={() => fileRef.current?.click()}
+          >
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".tex"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFile(file);
+              }}
+            />
+            {fileName ? (
+              <div className="flex flex-col items-center gap-2">
+                <FileText size={32} style={{ color: "var(--success)" }} />
+                <span className="font-medium text-sm" style={{ color: "var(--text-primary)" }}>
+                  {fileName}
+                </span>
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  Click or drop to replace
+                </span>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <Upload size={32} style={{ color: "var(--text-muted)" }} />
+                <span className="font-medium text-sm" style={{ color: "var(--text-secondary)" }}>
+                  Drop your .tex resume here
+                </span>
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  or click to browse local files
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Input Option 2: Paste LaTeX Code Textarea */}
+        {inputMethod === "paste" && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <label
+                className="block text-xs font-semibold uppercase tracking-wider"
+                style={{ color: "var(--text-secondary)" }}
+              >
+                LaTeX Resume Source (.tex)
+              </label>
+              <button
+                type="button"
+                className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1.5 font-medium transition-colors"
+                onClick={async () => {
+                  try {
+                    const text = await navigator.clipboard.readText();
+                    if (text) setTexContent(text);
+                  } catch (e) {
+                    console.log("Clipboard read blocked:", e);
+                  }
+                }}
+              >
+                <Clipboard size={13} />
+                Paste from Clipboard
+              </button>
+            </div>
+            <textarea
+              className="textarea-field font-mono text-xs"
+              placeholder="\documentclass{article}&#10;\begin{document}&#10;% Paste your LaTeX resume code here...&#10;\end{document}"
+              value={texContent}
+              onChange={(e) => setTexContent(e.target.value)}
+              rows={7}
+              style={{
+                fontFamily: "var(--font-mono)",
+                lineHeight: "1.5",
+              }}
+            />
+            {texContent.trim() && (
+              <span className="text-[11px] mt-1.5 block font-mono" style={{ color: "var(--success)" }}>
+                ✓ {texContent.split("\n").length} lines ({texContent.length} chars) loaded
+              </span>
+            )}
+          </div>
+        )}
 
         {/* JD Textarea */}
         <div className="mb-6">
