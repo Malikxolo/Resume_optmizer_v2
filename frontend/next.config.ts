@@ -7,8 +7,8 @@ const BACKEND_URL =
     : "https://resume-api.totalcareservices.me");
 
 const nextConfig: NextConfig = {
-  // Standalone output for Docker deployment
-  output: "standalone",
+  // Only use standalone output when explicitly requested for Docker builds
+  ...(process.env.DOCKER_BUILD === "true" ? { output: "standalone" } : {}),
 
   // Keep Turbopack inside this frontend project when another lockfile exists higher up.
   turbopack: {
