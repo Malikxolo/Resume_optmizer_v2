@@ -16,6 +16,7 @@ import {
   Sparkles,
   RefreshCw,
   RotateCw,
+  Code,
 } from "lucide-react";
 
 import type {
@@ -288,6 +289,17 @@ export default function HomePage() {
     setHasPdf(false);
   }, []);
 
+  const handleDownloadTex = useCallback(() => {
+    if (!sessionId) return;
+    const url = `${API_BASE}/api/download-tex/${sessionId}?filename=resume_optimized.tex`;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "resume_optimized.tex";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }, [sessionId]);
+
   return (
     <div className="app-shell" style={{ background: "var(--bg-primary)" }}>
       {/* Top Navbar */}
@@ -381,7 +393,20 @@ export default function HomePage() {
                 onClick={() => setShowDownloadModal(true)}
               >
                 <Download size={14} />
-                Export / Download
+                Export PDF
+              </button>
+
+              <button
+                className="btn-ghost app-action-button"
+                style={{
+                  borderColor: "rgba(139, 92, 246, 0.4)",
+                  color: "var(--text-accent)",
+                }}
+                onClick={handleDownloadTex}
+                title="Download raw LaTeX source (.tex) file"
+              >
+                <Code size={14} />
+                Download TeX
               </button>
 
               <button
