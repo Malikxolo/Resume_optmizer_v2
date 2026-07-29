@@ -6,13 +6,14 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, Target, Sparkles, Award } from "lucide-react";
+import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, Target, Sparkles, Award, RefreshCw } from "lucide-react";
 import ScoreRing from "./ScoreRing";
 import type { ATSScore, AIScreeningScore, SubCriterionScore } from "@/types";
 
 interface ScoreDashboardProps {
   atsScore: ATSScore | null;
   aiScore: AIScreeningScore | null;
+  isRescoring?: boolean;
 }
 
 function SubScoreRow({ sub, index }: { sub: SubCriterionScore; index: number }) {
@@ -170,7 +171,7 @@ function ScoreCard({
   );
 }
 
-export default function ScoreDashboard({ atsScore, aiScore }: ScoreDashboardProps) {
+export default function ScoreDashboard({ atsScore, aiScore, isRescoring }: ScoreDashboardProps) {
   if (!atsScore && !aiScore) return null;
 
   const atsVal = atsScore?.total_score ?? 0;
@@ -190,6 +191,38 @@ export default function ScoreDashboard({ atsScore, aiScore }: ScoreDashboardProp
 
   return (
     <div className="score-dashboard">
+      <AnimatePresence>
+        {isRescoring && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="mb-4 p-3.5 rounded-2xl flex items-center justify-between shadow-lg"
+            style={{
+              background: "linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%)",
+              border: "1px solid rgba(139, 92, 246, 0.4)",
+              boxShadow: "0 0 20px rgba(139, 92, 246, 0.2)",
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <RefreshCw size={18} className="animate-spin text-purple-400 shrink-0" />
+              <div>
+                <span className="text-xs font-bold text-white flex items-center gap-2">
+                  Re-evaluating ATS & AI Recruiter Scores...
+                </span>
+                <p className="text-[11px] text-purple-200 mt-0.5">
+                  Analyzing resume against Job Description and refreshing scores & issues in real-time.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/25 border border-purple-400/30 text-[11px] font-mono font-semibold text-purple-200">
+              <span className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />
+              Re-evaluating
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Primary Overall Match Score Hero Card */}
       <motion.div
         className="glass-card score-hero"

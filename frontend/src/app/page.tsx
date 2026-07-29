@@ -232,9 +232,12 @@ export default function HomePage() {
     [sessionId, chatSSE]
   );
 
+  const [isReverting, setIsReverting] = useState(false);
+
   const handleRevert = useCallback(
     async (version: number) => {
       if (!sessionId) return;
+      setIsReverting(true);
       try {
         const res = await fetch(`${API_BASE}/api/revert/${sessionId}/${version}`, {
           method: "POST",
@@ -242,19 +245,32 @@ export default function HomePage() {
         if (res.ok) {
           const data = await res.json();
           setCurrentVersion(data.version);
-          scoringSSE.startStream(`${API_BASE}/api/score/${sessionId}`);
-          const stateRes = await fetch(`${API_BASE}/api/session/${sessionId}`);
-          if (stateRes.ok) {
-            const state = await stateRes.json();
-            setPlaintext(state.plaintext);
+          if (data.plaintext) setPlaintext(data.plaintext);
+
+          if (data.scores_data) {
+            if (data.scores_data.ats_score) setAtsScore(data.scores_data.ats_score);
+            if (data.scores_data.ai_screening_score) setAiScore(data.scores_data.ai_screening_score);
+            if (data.scores_data.issues) setIssues(data.scores_data.issues);
+            if (data.scores_data.missing_content) setMissingContent(data.scores_data.missing_content);
           }
+
           fetchVersions();
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant" as const,
+              content: `🔄 Restored Version ${version} as Version ${data.version}. Active scores, issues, and Copilot context are now synced to Version ${version}.`,
+            },
+          ]);
         }
       } catch (e) {
         console.error("Revert failed:", e);
+      } finally {
+        setIsReverting(false);
       }
     },
-    [sessionId, scoringSSE, fetchVersions]
+    [sessionId, fetchVersions]
   );
 
   const handleNewResume = useCallback(() => {
@@ -440,7 +456,11 @@ export default function HomePage() {
               animate={{ opacity: 1 }}
             >
               {/* Scores Header */}
-              <ScoreDashboard atsScore={atsScore} aiScore={aiScore} />
+              <ScoreDashboard
+                atsScore={atsScore}
+                aiScore={aiScore}
+                isRescoring={scoringSSE.isStreaming || chatSSE.isStreaming || isReverting}
+              />
 
               {/* Main Content Layout */}
               <div className="workspace-grid">

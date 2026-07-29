@@ -444,10 +444,20 @@ async def revert_to_version(session_id: str, version: int):
         change_summary=f"Reverted to version {version}",
     )
 
+    scores_data = None
+    if target.get("scores_json"):
+        try:
+            scores_data = json.loads(target["scores_json"])
+        except Exception:
+            scores_data = None
+
     return {
         "version": new_version_num,
         "reverted_from": version,
         "message": f"Reverted to version {version}",
+        "scores_data": scores_data,
+        "tex_content": target["tex_content"],
+        "plaintext": target.get("plaintext", ""),
     }
 
 
