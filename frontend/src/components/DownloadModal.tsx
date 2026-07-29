@@ -1,12 +1,11 @@
 "use client";
 
 /**
- * DownloadModal — Filename prompt modal for PDF download.
- * Glassmorphism overlay with input and download trigger.
+ * DownloadModal — Export modal supporting both PDF & LaTeX (.tex) downloads.
  */
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, X } from "lucide-react";
+import { Download, X, FileText, Code } from "lucide-react";
 import { useState } from "react";
 import { API_BASE } from "@/config";
 
@@ -21,12 +20,16 @@ export default function DownloadModal({
   onClose,
   sessionId,
 }: DownloadModalProps) {
+  const [format, setFormat] = useState<"pdf" | "tex">("pdf");
   const [filename, setFilename] = useState("resume_optimized");
 
-  const handleDownload = () => {
-    const name = filename.trim() || "resume_optimized";
-    const finalName = name.endsWith(".pdf") ? name : `${name}.pdf`;
-    const url = `${API_BASE}/api/download/${sessionId}?filename=${encodeURIComponent(finalName)}`;
+  const handleDownload = (targetFormat: "pdf" | "tex" = format) => {
+    const rawName = filename.trim().replace(/\.(pdf|tex)$/i, "") || "resume_optimized";
+    const ext = targetFormat === "pdf" ? ".pdf" : ".tex";
+    const finalName = `${rawName}${ext}`;
+
+    const endpoint = targetFormat === "pdf" ? `/api/download/${sessionId}` : `/api/download-tex/${sessionId}`;
+    const url = `${API_BASE}${endpoint}?filename=${encodeURIComponent(finalName)}`;
     
     // Trigger download via hidden link
     const a = document.createElement("a");
@@ -71,7 +74,7 @@ export default function DownloadModal({
                   className="text-lg font-semibold"
                   style={{ fontFamily: "var(--font-display)", color: "var(--text-primary)" }}
                 >
-                  Download Resume
+                  Export Resume
                 </h3>
                 <button
                   className="p-1 rounded hover:bg-white/5 transition-colors"
@@ -81,12 +84,46 @@ export default function DownloadModal({
                 </button>
               </div>
 
+              {/* Format selector tabs */}
+              <div
+                className="flex items-center gap-2 mb-5 p-1 rounded-xl"
+                style={{
+                  background: "rgba(255, 255, 255, 0.03)",
+                  border: "1px solid var(--border-subtle)",
+                }}
+              >
+                <button
+                  type="button"
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    format === "pdf"
+                      ? "bg-violet-600/30 text-white border border-violet-500/40 shadow-sm"
+                      : "text-gray-400 hover:text-gray-200"
+                  }`}
+                  onClick={() => setFormat("pdf")}
+                >
+                  <FileText size={14} />
+                  PDF Document (.pdf)
+                </button>
+                <button
+                  type="button"
+                  className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    format === "tex"
+                      ? "bg-violet-600/30 text-white border border-violet-500/40 shadow-sm"
+                      : "text-gray-400 hover:text-gray-200"
+                  }`}
+                  onClick={() => setFormat("tex")}
+                >
+                  <Code size={14} />
+                  LaTeX Code (.tex)
+                </button>
+              </div>
+
               <div className="mb-6">
                 <label
                   className="block text-sm mb-2"
                   style={{ color: "var(--text-secondary)" }}
                 >
-                  Filename
+                  File Name
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -97,8 +134,8 @@ export default function DownloadModal({
                     onKeyDown={(e) => e.key === "Enter" && handleDownload()}
                     autoFocus
                   />
-                  <span className="text-sm" style={{ color: "var(--text-muted)" }}>
-                    .pdf
+                  <span className="text-sm font-mono font-semibold" style={{ color: "var(--text-accent)" }}>
+                    .{format}
                   </span>
                 </div>
               </div>
@@ -109,12 +146,12 @@ export default function DownloadModal({
                 </button>
                 <motion.button
                   className="btn-accent flex-1 flex items-center justify-center gap-2"
-                  onClick={handleDownload}
+                  onClick={() => handleDownload(format)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <Download size={16} />
-                  Download
+                  Download .{format.toUpperCase()}
                 </motion.button>
               </div>
             </motion.div>

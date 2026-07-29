@@ -412,6 +412,24 @@ async def download_pdf(session_id: str, filename: str = "resume_optimized.pdf"):
     )
 
 
+@router.get("/download-tex/{session_id}")
+async def download_tex(session_id: str, filename: str = "resume_optimized.tex"):
+    """Download the current raw LaTeX .tex file as an attachment."""
+    latest = await get_latest_version(session_id)
+    if not latest or not latest.get("tex_content"):
+        raise HTTPException(404, "TeX content not available")
+
+    # Ensure filename ends with .tex
+    if not filename.endswith(".tex"):
+        filename += ".tex"
+
+    return Response(
+        content=latest["tex_content"],
+        media_type="text/plain; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
 # ═══════════════════════════════════════════════════════════════════
 # Version history
 # ═══════════════════════════════════════════════════════════════════

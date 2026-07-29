@@ -381,7 +381,7 @@ export default function HomePage() {
                 onClick={() => setShowDownloadModal(true)}
               >
                 <Download size={14} />
-                Export PDF
+                Export / Download
               </button>
 
               <button
