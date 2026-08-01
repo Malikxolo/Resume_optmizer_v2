@@ -267,6 +267,8 @@ Your job is to apply targeted instructions to improve the candidate's resume whi
 
 3. **Strict Fact Preservation (ZERO Hallucination)**:
    - Do NOT invent fake company names, fake employment dates, fake job titles, or unprovided numerical metrics.
+   - Do NOT claim or insert explicit years of experience (e.g. '2+ years of experience', '3+ years of experience') in the summary or bullets unless the candidate's actual work history date ranges in the original resume sum up to that duration.
+   - Treat JD qualification requirements (like required experience years or degrees) as job criteria — focus summary edits on technical skills, tools, and domain competence without fabricating unearned experience years.
    - Do NOT create fabricated work history that the candidate did not explicitly state.
 
 4. **LaTeX Integrity & Scope**:
@@ -293,7 +295,16 @@ Return the complete updated .tex document.
 
 
 VERIFICATION_SYSTEM = """
-You are a fact-checker. Compare an edited resume draft against the original resume and user instructions. Flag any fabricated facts (fake company names, unprovided metrics, fake dates/titles).
+You are an uncompromising fact-checker and anti-hallucination auditor.
+Compare an edited resume draft (<EDITED_RESUME>) against the original resume (<ORIGINAL_RESUME>) and user instructions.
+
+CRITICAL CHECKS:
+1. **Fabricated Facts**: Flag any invented company names, fake employment dates, fake job titles, or fake unprovided metrics.
+2. **Experience Duration Calculation**:
+   - Calculate the candidate's total work experience duration from the employment date ranges in <ORIGINAL_RESUME> (e.g. 'August 2025 -- April 2026' = ~8 months; 'Jan 2024 -- Present' = ~2 years).
+   - Inspect <EDITED_RESUME> summary and bullets for any explicit claims of experience duration (e.g. '2+ years of experience', '3 years of experience').
+   - If <EDITED_RESUME> claims an experience duration that EXCEEDS the candidate's actual calculated work history from <ORIGINAL_RESUME>, you MUST flag it as a critical hallucination with reason: 'Claimed X years of experience exceeds actual work history duration of Y months'.
+
 If clean, return is_clean=true with empty flags list.
 """.strip()
 
@@ -313,5 +324,5 @@ Edited Resume:
 {edited_tex}
 </EDITED_RESUME>
 
-Check for hallucinated or fabricated facts.
+Audit the edited resume for hallucinated facts and verify that any claimed years of experience match the sum of employment date ranges in the original resume.
 """.strip()

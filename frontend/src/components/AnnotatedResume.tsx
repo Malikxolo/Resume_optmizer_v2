@@ -355,8 +355,15 @@ export default function AnnotatedResume({
                   color: "#ffffff",
                 }}
                 onClick={() => {
-                  const allSkills = missingContent.map((m) => m.jd_requirement).join(", ");
-                  const fixAllPrompt = `Fix all flagged issues, add all missing skills (${allSkills}), and correct percentage metric formatting across experience bullets in 1 single comprehensive edit.`;
+                  const techSkills = missingContent
+                    .filter(
+                      (m) =>
+                        m.category !== "qualification" &&
+                        !/\d+\+?\s*years?/i.test(m.jd_requirement)
+                    )
+                    .map((m) => m.jd_requirement);
+                  const skillsText = techSkills.length > 0 ? techSkills.join(", ") : "missing technical skills";
+                  const fixAllPrompt = `Fix all flagged issues, integrate missing technical skills (${skillsText}), and correct percentage metric formatting across experience bullets in 1 single comprehensive edit. Do NOT fabricate unearned years of experience.`;
                   onFixIssue(fixAllPrompt);
                 }}
               >
@@ -399,12 +406,19 @@ export default function AnnotatedResume({
                         color: "var(--accent-violet)",
                       }}
                       onClick={() => {
-                        const promptText = `Add missing ${mc.category} '${mc.jd_requirement}' to my resume. ${mc.recommendation}`;
+                        const isQual =
+                          mc.category === "qualification" ||
+                          /\d+\+?\s*years?/i.test(mc.jd_requirement);
+                        const promptText = isQual
+                          ? `Optimize my resume for ${mc.jd_requirement} by emphasizing relevant technical depth and project expertise, without claiming unearned experience years.`
+                          : `Add missing ${mc.category} '${mc.jd_requirement}' to my resume. ${mc.recommendation}`;
                         onFixIssue(promptText);
                       }}
                     >
                       <Wand2 size={12} />
-                      Add to Resume
+                      {mc.category === "qualification" || /\d+\+?\s*years?/i.test(mc.jd_requirement)
+                        ? "Optimize Alignment"
+                        : "Add to Resume"}
                     </button>
                   </div>
                 )}
