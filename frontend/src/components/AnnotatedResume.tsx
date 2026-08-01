@@ -20,6 +20,7 @@ import {
   Target,
   Users,
 } from "lucide-react";
+import FixAllModal from "./FixAllModal";
 
 interface AnnotatedResumeProps {
   plaintext: string;
@@ -104,6 +105,7 @@ export default function AnnotatedResume({
 }: AnnotatedResumeProps) {
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const [modePopoverIssue, setModePopoverIssue] = useState<string | null>(null);
+  const [isFixAllOpen, setIsFixAllOpen] = useState(false);
 
   const segments = buildSegments(plaintext, issues);
   let annotationIndex = 0;
@@ -354,18 +356,7 @@ export default function AnnotatedResume({
                   background: "linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%)",
                   color: "#ffffff",
                 }}
-                onClick={() => {
-                  const techSkills = missingContent
-                    .filter(
-                      (m) =>
-                        m.category !== "qualification" &&
-                        !/\d+\+?\s*years?/i.test(m.jd_requirement)
-                    )
-                    .map((m) => m.jd_requirement);
-                  const skillsText = techSkills.length > 0 ? techSkills.join(", ") : "missing technical skills";
-                  const fixAllPrompt = `Fix all flagged issues, integrate missing technical skills (${skillsText}), and correct percentage metric formatting across experience bullets in 1 single comprehensive edit. Do NOT fabricate unearned years of experience.`;
-                  onFixIssue(fixAllPrompt);
-                }}
+                onClick={() => setIsFixAllOpen(true)}
               >
                 <Sparkles size={14} />
                 ⚡ Auto-Fix All Issues with AI
@@ -426,6 +417,17 @@ export default function AnnotatedResume({
             ))}
           </div>
         </div>
+      )}
+
+      {/* Interactive Fix All Modal */}
+      {onFixIssue && (
+        <FixAllModal
+          isOpen={isFixAllOpen}
+          onClose={() => setIsFixAllOpen(false)}
+          issues={issues}
+          missingContent={missingContent}
+          onApplyFixes={onFixIssue}
+        />
       )}
     </div>
   );
